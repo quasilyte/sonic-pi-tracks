@@ -2,16 +2,26 @@ use_bpm 125
 
 $delay = 0.25
 
+# The instrument set significantly affects the sound.
 $instruments = [
   :unused, #0
   {sample: :drum_heavy_kick, amp: 1.15, rate: 1}, #1
   {sample: :drum_snare_soft, amp: 1.15, rate: 1}, #2
-  {synth: :prophet, amp: 0.45, release: 1}, #3
-  {synth: :piano, amp: 1.3, release: $delay*20}, #4
-  {synth: :blade, amp: 0.9, release: 1}, #5
+  {synth: :prophet, amp: 0.45, release: 1, pitch: 0}, #3
+  {synth: :piano, amp: 1.3, release: $delay*20, pitch: 0}, #4
+  {synth: :blade, amp: 0.75, release: 1, pitch: 0}, #5
   :unused, #6
   {sample: :bd_zome, amp: 0.45, rate: 1.3}, #7
 ]
+
+def run(notes)
+  with_fx :reverb, mix: 0.3 do
+    run_track(0, notes, -0.7)
+    run_track(1, notes, -0.3)
+    run_track(2, notes, 0.3)
+    run_track(3, notes, 0.7)
+  end
+end
 
 def run_track(id, notes, pan)
   in_thread do
@@ -34,7 +44,7 @@ def run_track(id, notes, pan)
             use_synth current_instrument[:synth]
           end
           i = current_instrument
-          play note[0], pan: pan, amp: i[:amp], release: i[:release]
+          play note[0], pan: pan, amp: i[:amp], release: i[:release], pitch: i[:pitch]
         end
       end
 
@@ -827,7 +837,4 @@ patterns.each { |p|
   all_notes += p
 }
 
-run_track(0, all_notes, -0.7)
-run_track(1, all_notes, -0.3)
-run_track(2, all_notes, 0.3)
-run_track(3, all_notes, 0.7)
+run(all_notes)
